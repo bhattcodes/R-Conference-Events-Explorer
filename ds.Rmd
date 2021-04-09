@@ -1,0 +1,204 @@
+---
+title: "R Conference Events Explorer"
+author: "Aman Bhatt"
+output:
+  flexdashboard::flex_dashboard:
+    theme: paper
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+# prep workspace
+
+library(dplyr)  # tidy data manipulation
+library(leaflet)  # interative mapping
+library(tidyverse)
+library(crosstalk)  # inter-widget interactivity
+library(DT)
+mydata <- readRDS(".\\R_Events.rds")
+sch<<-NULL
+for(element in mydata){
+  sch<-rbind(sch,element)
+}
+
+sch <- filter(sch, is.na(venue_lat) == FALSE, is.na(venue_lon)== FALSE)
+sch <- sch[,-c(19,20,21)]
+sd <- SharedData$new(sch)
+
+```
+
+Interactives {data-icon="ion-stats-bars"}
+=====================================  
+
+Column {data-width=400}
+-------------------------------------
+
+### Filters
+
+```{r filters}
+filter_select(
+  id = "venue_city",
+  label = "City",
+  sharedData = sd,
+  group = ~venue_city
+)
+bscols(
+
+  filter_checkbox(
+    id = "status",
+    label = "Status",
+    sharedData = sd,
+    group = ~status
+  )
+)
+bscols(
+  filter_slider(
+    id = "yes_rsvp_count",
+    label = "Rsvp count",
+    sharedData = sd,
+    column = ~yes_rsvp_count,
+    step = 1,
+    round = TRUE,
+    sep = "",
+    ticks = FALSE
+  )
+)
+
+
+```
+
+
+### Datatable {data-height=600}
+    
+```{r datatable}
+sd %>% 
+  DT::datatable(
+    filter = "top",  # allows filtering on each column
+    extensions = c(
+      "Buttons",  # add download buttons, etc
+       "Scroller" # for scrolling down the rows rather than pagination
+    ),
+    rownames = FALSE,  # remove rownames
+    style = "bootstrap",
+    class = "compact",
+    width = "100%",
+    options = list(
+      dom = "Blrtip",  # specify content (search box, etc)
+      deferRender = TRUE,
+       scrollY = 200,
+      scroller = TRUE,
+      columnDefs = list(
+        list(
+          visible = FALSE,
+          targets = c(2, 3, 5:15)
+        )
+      ), 
+      buttons = list(
+        I("colvis"),  # turn columns on and off
+        "csv",  # download as .csv
+        "excel"  # download as .xlsx
+      )
+    ),
+    colnames = c(
+      "Name" = "venue_name",
+      "Id" = "id",
+      "Status" = "status",
+      "date" = "local_date",
+      "time" = "local_time",
+      "latitude" = "venue_lat",
+      "longitude" = "venue_lon",
+      "address" = "venue_address_1",
+      "city" = "venue_city",
+      "country" = "venue_country"
+    )
+  )
+```
+
+
+
+
+
+
+Column {data-width=600}
+-------------------------------------
+    
+### Interactive map
+    
+```{r map}
+
+
+#main work --------------------------------
+
+
+ sd %>% 
+  leaflet::leaflet() %>%
+  leaflet::addProviderTiles(providers$OpenStreetMap,options = providerTileOptions(minZoom = 2, maxZoom = 100)) %>% 
+  leaflet::addAwesomeMarkers(
+    lng = sch$venue_lon,
+    lat = sch$venue_lat,
+    popup = ~paste0(
+      "<h1>", sch$name, "</h1>",
+      
+      "<table style='width:100%'>",
+      
+      "<tr>",
+      "<th>Venue Name</th>",
+      "<th>", sch$venue_name, "</th>",
+      "</tr>",
+      
+      "<tr>",
+      "<tr>",
+      "<th>Date</th>",
+      "<th>", sch$local_date, "</th>",
+      "</tr>",
+      
+      "<tr>",
+      "<tr>",
+      "<th>Time</th>",
+      "<th>", sch$time, "</th>",
+      "</tr>",
+      
+      "<tr>",
+      "<tr>",
+      "<th>Location</th>",
+      "<th>", sch$venue_address_1, ", ", sch$venue_zip, "</th>",
+      "</tr>",
+      
+      "<tr>",
+      "<tr>",
+      "<th>Country</th>",
+      "<th>", sch$venue_country, "</th>",
+      "</tr>"
+    ), #end popup()
+    datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE))
+)
+
+
+```
+
+Information {data-orientation=rows data-icon="fa-info-circle"}
+===================================== 
+
+
+
+Column {data-width=400}
+-------------------------------------
+
+### About
+
+#### How to
+
+* click to grab and drag the map around
+* zoom with the '+' and '--' buttons (top-left) or with your mouse's scroll wheel
+* click a marker to reveal a popup with information about that school
+
+
+> Made by Aman Bhatt
+>
+>GSOC Project
+>
+
+
+
+
