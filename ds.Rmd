@@ -158,6 +158,12 @@ Column {data-width=600}
       "<th>", sch$time, "</th>",
       "</tr>",
       
+       "<tr>",
+      "<tr>",
+      "<th>City</th>",
+      "<th>", sch$venue_city, "</th>",
+      "</tr>",
+      
       "<tr>",
       "<tr>",
       "<th>Location</th>",
