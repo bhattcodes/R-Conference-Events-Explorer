@@ -9,5 +9,5 @@ terms of planning and avoiding coincidence.
 <p align="center">
   <img width="auto" height="auto" src="./images-for-readme/ss2.jpg">
 </p>
-
-# Demo App Link: https://bhattcodes.github.io/R-Conference-Events-Explorer/ds.html (deployed on github pages)
+</br>
+ Demo App Link: https://bhattcodes.github.io/R-Conference-Events-Explorer/ds.html (deployed on github pages)
